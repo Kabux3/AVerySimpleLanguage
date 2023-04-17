@@ -4,10 +4,10 @@ module M : Heap.M with type vt = Expression.t = struct
 
   type range = (vt * vt)
 
-  type tree_t = 
+  type tree_t =
     | Leaf of range * vt
     | Node of range * tree_t
-  
+
   type t = (int, tree_t) Hashtbl.t
 
   let init () : t = Hashtbl.create Parameters.size
@@ -17,9 +17,9 @@ module M : Heap.M with type vt = Expression.t = struct
     let l = Hashtbl.length h in
     Hashtbl.replace h l tree;
     [ (h, Expression.Val (Loc l), pc) ]
-  
+
   let update h (arr : vt) (index : vt) (v : vt) (pc : vt PathCondition.t)  : (t * vt PathCondition.t) list =
-    ignore arr;  
+    ignore arr;
     ignore v;
     ignore index;
     ignore h;
@@ -34,9 +34,12 @@ module M : Heap.M with type vt = Expression.t = struct
     []
 
   let free h (arr : vt) (pc : vt PathCondition.t) : (t * vt PathCondition.t) list =
-    ignore arr;
-    ignore pc;
-    ignore h;
-    []
+    begin
+    match arr with
+    | Val (Loc i) ->
+        Hashtbl.remove h i
+    | _ -> failwith "Invalid allocation index"
+    end;
+    [h, pc]
 
 end
