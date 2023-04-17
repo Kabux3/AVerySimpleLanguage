@@ -1,5 +1,5 @@
 module M : Heap.M with type vt = Expression.t = struct
-  
+
   type  vt = Expression.t
 
   type range = (vt * vt)
@@ -12,11 +12,11 @@ module M : Heap.M with type vt = Expression.t = struct
 
   let init () : t = Hashtbl.create Parameters.size
 
-  let malloc h (sz : vt) (pc : vt PathCondition.t) : (t * vt * vt PathCondition.t) list =
-    ignore sz;
-    ignore pc;
-    ignore h;
-    []
+  let malloc (h : t) (sz : vt) (pc : vt PathCondition.t) : (t * vt * vt PathCondition.t) list =
+    let tree = Leaf ((Expression.Val (Integer 0), sz), Expression.Val (Integer 0)) in
+    let l = Hashtbl.length h in
+    Hashtbl.replace h l tree;
+    [ (h, Expression.Val (Loc l), pc) ]
   
   let update h (arr : vt) (index : vt) (v : vt) (pc : vt PathCondition.t)  : (t * vt PathCondition.t) list =
     ignore arr;  
