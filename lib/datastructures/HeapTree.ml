@@ -1,12 +1,12 @@
-module M : Heap.M with type vt = Value.t * Expression.t = struct
+module M : Heap.M with type vt = Expression.t = struct
   
   type  vt = Expression.t
 
   type range = (vt * vt)
 
   type tree_t = 
-    | Leaf -> range * vt
-    | Node -> range * tree_t
+    | Leaf of range * vt
+    | Node of range * tree_t
   
   type t = (int, tree_t) Hashtbl.t
 
