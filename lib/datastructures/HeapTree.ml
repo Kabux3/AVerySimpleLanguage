@@ -90,12 +90,41 @@ module M : Heap.M with type vt = Expression.t = struct
         new_h, pc') new_trees
     | None -> failwith "Out of bounds access"
 
+
+  let may_within_range (r : range) (index : vt) (pc : vt PathCondition.t) : bool =
+    let lower, upper = r in
+    
+    let e1 = Expression.BinOp (Gte, index, lower) in
+    let e2 = Expression.BinOp (Lt, index, upper) in
+  
+    Encoding.is_sat ([e1; e2] @ pc)
+  
+  let rec search_tree (index : vt) (pc : vt PathCondition.t) (tree : tree_t) : (vt * vt PathCondition.t) list = 
+      (match tree with 
+      | Leaf (r, v) -> let lower, upper = r in
+                    let in_range = may_within_range r index pc in
+                    if in_range then
+                      [(v, pc @ [Expression.BinOp (Lt, index, upper); Expression.BinOp (Gte, index, lower)])]
+                    else  
+                      []
+      | Node (r, tree_list) ->   let lower, upper = r in
+                            let in_range = may_within_range r index pc in
+                            if in_range then
+                              List.concat (List.map (search_tree index (pc @ [Expression.BinOp (Lt, index, upper); Expression.BinOp (Gte, index, lower)])) tree_list)
+                            else  
+                              []
+      )
+                                  
+
   let lookup h (arr : vt) (index : vt) (pc : vt PathCondition.t) : (t * vt * vt PathCondition.t) list =
-    ignore index;
-    ignore arr;
-    ignore pc;
-    ignore h;
-    []
+    let tbl = h in 
+    match arr with  
+    | Val Loc l -> 
+      (match Hashtbl.find_opt tbl l with 
+      | Some tree -> List.map (fun (a,b) -> (h, a,b)) (search_tree index pc tree)
+      | _ -> failwith ("InternalError: HeapTree.lookup, accessed tree is not in the heap"))
+    | _ -> failwith ("InternalError: HeapTree.lookup, arr must be location")
+
 
   let free h (arr : vt) (pc : vt PathCondition.t) : (t * vt PathCondition.t) list =
     begin

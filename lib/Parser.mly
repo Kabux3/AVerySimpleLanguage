@@ -105,7 +105,7 @@ statement:
     { Program.Print exprs }
   | v = VAR; DEFEQ; SYMBOL; LPAREN; s = STRING; RPAREN;
     { Program.Symbol (v, s)}
-  | v = VAR; DEFEQ; SYMBOL; LPAREN; s = STRING; RPAREN;
+  | v = VAR; DEFEQ; SYMBOL_INT; LPAREN; s = STRING; RPAREN;
     { Program.Symbol_int (v, s)}
   | arr = VAR; DEFEQ; NEW; LPAREN; e = expression; RPAREN;
     { Program.New (arr, e) }
